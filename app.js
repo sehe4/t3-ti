@@ -1,10 +1,66 @@
-const express = require("express");
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const axios = require('axios');
+
 const app = express();
+app.use(cors());
+app.use(bodyParser.json());
+
+
 const port = process.env.PORT || 3001;
+
+const pgClient = new Pool({
+  user: "shernandezv@uc.cl",
+  host: "langosta.ing.puc.cl",
+  database: "shernandezv@uc.cl",
+  password: 18642403,
+  port: 5432 
+});
+
+// pgClient.on('error', (err, client) => {
+//   console.error('Unexpected error on idle client', err)
+//   process.exit(-1)
+// })
+// pgClient.connect((err, client1, done) => {
+//   if (err) throw err
+//   client1.query('CREATE TABLE IF NOT EXISTS orders (id VARCHAR(255), cliente VARCHAR(255), sku VARCHAR(255), fechaEntrega TIMESTAMP, cantidad INT, urlNotificacion VARCHAR(255), estado VARCHAR(255) )', (err, res) => {
+//     done()
+//     if (err) {
+//       console.log(err.stack)
+//     } else {
+//       console.log("Tabla funcionando")
+//     }
+//   })
+// })
+const body = {
+  "url": "https://tarea-3-ti-g920.onrender.com/"
+}
+
+axios.post('https://us-central1-taller-integracion-310700.cloudfunctions.net/tarea-3-2023-1/subscriptions/18642403', body)
+  .then(response => {
+  })
+  .catch(error => {
+
+  });
 
 app.get("/", (req, res) => res.type('html').send(html));
 
+app.post("/", (req, res) => {
+  try {
+    console.log(req)
+    res.status(200).send({ message: 'Message recieved' });
+  } catch (error) {
+    console.error('Failed to recieve message:', error.response.data);
+    res.status(500).send({ error: 'Failed to recieve message' });
+  }
+});
+
+
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+
+
+
 
 
 const html = `
