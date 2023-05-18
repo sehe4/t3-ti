@@ -105,18 +105,6 @@ app.post("/", (req, res) => {
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
-// Release the client back to the pool and close the connection
-  pgClient.end((err) => {
-   if (err) {
-     console.error('Error closing pool:', err);
-   } else {
-     console.log('Connection closed successfully');
-   }
- });
-
-
-
-
 const html = `
 <!DOCTYPE html>
 <html>
