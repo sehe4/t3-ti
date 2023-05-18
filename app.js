@@ -71,7 +71,7 @@ app.post("/", (req, res) => {
     pgClient.connect((err, client, done) => {
       console.log("Insertando el mensaje")
         if (err) throw err
-        client.query('SELECT * FROM transactions WHERE messageId = $1', [message.messageId], (err1, res1) => {
+        client.query('SELECT * FROM transactions WHERE message_id = $1', [message.messageId], (err1, res1) => {
           console.log("La transacción no existe, se puede crear")
           if (res1.rowCount == 0) {
             if (err) throw err
