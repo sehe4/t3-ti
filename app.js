@@ -90,7 +90,7 @@ app.post("/", (req, res) => {
             if (err) throw err
             client.query('INSERT INTO messages(message_id, data, publish_time) VALUES ($1, $2, $3) RETURNING *', [message.messageId, decodedString, new Date(message.publishTime)], (err2, res2) => {
               })
-              client.query('INSERT INTO transactions(type, message_id, origin_bank, origin_account, destination_bank, destination_account, amount, publish_time) RETURNING *', [type, messageId, originBank, originAccount, destinationBank, destinationAccount, amount, new Date(message.publishTime)], (err2, res2) => {
+              client.query('INSERT INTO transactions(type, message_id, origin_bank, origin_account, destination_bank, destination_account, amount, publish_time) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *', [type, messageId, originBank, originAccount, destinationBank, destinationAccount, amount, new Date(message.publishTime)], (err2, res2) => {
                 done()
                   if (err1) {
                     console.log(err1.stack)
