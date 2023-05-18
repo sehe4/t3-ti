@@ -12,11 +12,11 @@ app.use(bodyParser.json());
 const port = process.env.PORT || 3001;
 
 const pgClient = new Pool({
-  user: "shernandezv@uc.cl",
-  host: "langosta.ing.puc.cl",
-  database: "shernandezv@uc.cl",
-  password: 18642403,
-  port: 5432 
+  user: process.env.USER,
+  host: process.env.HOST,
+  database: process.env.DATABASE,
+  password: process.env.PASSWORD,
+  port: process.env.PGPORT 
 });
 
 // pgClient.on('error', (err, client) => {
