@@ -19,21 +19,21 @@ const pgClient = new Pool({
   port: process.env.PGPORT 
 });
 
-// pgClient.on('error', (err, client) => {
-//   console.error('Unexpected error on idle client', err)
-//   process.exit(-1)
-// })
-// pgClient.connect((err, client1, done) => {
-//   if (err) throw err
-//   client1.query('CREATE TABLE IF NOT EXISTS orders (id VARCHAR(255), cliente VARCHAR(255), sku VARCHAR(255), fechaEntrega TIMESTAMP, cantidad INT, urlNotificacion VARCHAR(255), estado VARCHAR(255) )', (err, res) => {
-//     done()
-//     if (err) {
-//       console.log(err.stack)
-//     } else {
-//       console.log("Tabla funcionando")
-//     }
-//   })
-// })
+pgClient.on('error', (err, client) => {
+  console.error('Unexpected error on idle client', err)
+  process.exit(-1)
+})
+pgClient.connect((err, client1, done) => {
+  if (err) throw err
+  client1.query('CREATE TABLE IF NOT EXISTS transactions (messageId VARCHAR(255), data VARCHAR(255), publishTime TIMESTAMP )', (err, res) => {
+    done()
+    if (err) {
+      console.log(err.stack)
+    } else {
+      console.log("Tabla funcionando")
+    }
+  })
+})
 const body = {
   "url": "https://tarea-3-ti-g920.onrender.com/"
 }
@@ -50,8 +50,42 @@ app.get("/", (req, res) => res.type('html').send(html));
 
 app.post("/", (req, res) => {
   try {
-    console.log("Mensaje",req.body)
-    res.status(200).send({ message: 'Message recieved' });
+    console.log("Mensaje",req.body);
+    const message = req.body.message;
+    // Decodificar la cadena base64 a buffer
+    const buffer = Buffer.from(message.data, 'base64');
+    
+    // Convertir el buffer a cadena
+    const decodedString = buffer.toString('utf8');
+    
+    // Convertir la cadena a decimal
+    const decimalValue = Number(decodedString);
+    // Insertar en la tabla
+
+    pgClient.connect((err, client, done) => {
+      console.log("Insertando el mensaje")
+        if (err) throw err
+        client.query('SELECT * FROM transactions WHERE messageId = $1', [message.messageId], (err1, res1) => {
+          console.log("La transacción no existe, se puede crear")
+          if (res1.rowCount == 0) {
+            if (err) throw err
+            client.query('INSERT INTO transactions(messageId, data, publishTime) VALUES ($1, $2, $3) RETURNING *', [message.messageId, decimalValue, new Date(message.publishTime)], (err2, res2) => {
+              done()
+                if (err1) {
+                  console.log(err1.stack)
+                } else {
+                  console.log("Transacción creada")
+                  return;
+                }
+              })
+          } else {
+            console.log("La transacción ya existe")
+            return;
+          }
+        })
+      })
+
+    res.status(200);
   } catch (error) {
     console.error('Failed to recieve message:', error.response.data);
     res.status(500).send({ error: 'Failed to recieve message' });
