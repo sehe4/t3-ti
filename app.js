@@ -30,13 +30,19 @@ pgClient.on('error', (err, client) => {
 pgClient.connect((err, client1, done) => {
 
   if (err) throw err
-  client1.query('CREATE TABLE IF NOT EXISTS transactions (message_id VARCHAR(255), data VARCHAR(255), publish_time TIMESTAMP )', (err, res) => {
-    console.log(res)
+  client1.query('CREATE TABLE IF NOT EXISTS messages (message_id VARCHAR(255), data VARCHAR(255), publish_time TIMESTAMP )', (err, res) => {
+    if (err) {
+      console.log(err.stack)
+    } else {
+      console.log("Tabla mensajes funcionando")
+    }
+  })
+  client1.query('CREATE TABLE IF NOT EXISTS transactions (type INT, message_id INT, origin_bank INT, origin_account INT, destination_bank INT, destination_account INT, amount INT, publish_time TIMESTAMP )', (err, res) => {
     done()
     if (err) {
       console.log(err.stack)
     } else {
-      console.log("Tabla funcionando")
+      console.log("Tabla transacciones funcionando")
     }
   })
 
@@ -66,24 +72,33 @@ app.post("/", (req, res) => {
     // Convertir el buffer a cadena
     const decodedString = buffer.toString('utf8');
 
+    const type = decodedString.substring(0, 4);
+    const messageId = decodedString.substring(4, 14);
+    const originBank = decodedString.substring(14, 21);
+    const originAccount = decodedString.substring(21, 31);
+    const destinationBank = decodedString.substring(31, 38);
+    const destinationAccount = decodedString.substring(38, 48);
+    const amount = decodedString.substring(48);
     // Insertar en la tabla
 
     pgClient.connect((err, client, done) => {
       console.log("Insertando el mensaje")
         if (err) throw err
-        client.query('SELECT * FROM transactions WHERE message_id = $1', [message.messageId], (err1, res1) => {
+        client.query('SELECT * FROM messages WHERE message_id = $1', [message.messageId], (err1, res1) => {
           console.log("La transacción no existe, se puede crear")
           if (res1.rowCount == 0) {
             if (err) throw err
-            client.query('INSERT INTO transactions(message_id, data, publish_time) VALUES ($1, $2, $3) RETURNING *', [message.messageId, decodedString, new Date(message.publishTime)], (err2, res2) => {
-              done()
-                if (err1) {
-                  console.log(err1.stack)
-                } else {
-                  console.log("Transacción creada")
-                  return;
-                }
+            client.query('INSERT INTO messages(message_id, data, publish_time) VALUES ($1, $2, $3) RETURNING *', [message.messageId, decodedString, new Date(message.publishTime)], (err2, res2) => {
               })
+              client.query('INSERT INTO transactions(type, message_id, origin_bank, origin_account, destination_bank, destination_account, amount, publish_time) RETURNING *', [type, messageId, originBank, originAccount, destinationBank, destinationAccount, amount, new Date(message.publishTime)], (err2, res2) => {
+                done()
+                  if (err1) {
+                    console.log(err1.stack)
+                  } else {
+                    console.log("Transacción creada")
+                    return;
+                  }
+                })
           } else {
             console.log("La transacción ya existe")
             return;
