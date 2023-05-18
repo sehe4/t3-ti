@@ -1,3 +1,5 @@
+
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -10,7 +12,6 @@ app.use(bodyParser.json());
 
 
 const port = process.env.PORT || 3001;
-
 const pgClient = new Pool({
   user: process.env.USER,
   host: process.env.HOST,
@@ -20,6 +21,8 @@ const pgClient = new Pool({
 });
 
 pgClient.on('error', (err, client) => {
+  console.log(err)
+  console.log(client)
   console.error('Unexpected error on idle client', err)
   process.exit(-1)
 })
