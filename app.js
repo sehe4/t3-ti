@@ -30,7 +30,7 @@ pgClient.on('error', (err, client) => {
 pgClient.connect((err, client1, done) => {
 
   if (err) throw err
-  client1.query('CREATE TABLE IF NOT EXISTS transactions (messageId VARCHAR(255), data VARCHAR(255), publishTime TIMESTAMP )', (err, res) => {
+  client1.query('CREATE TABLE IF NOT EXISTS transactions (message_id VARCHAR(255), data VARCHAR(255), publish_time TIMESTAMP )', (err, res) => {
     console.log(res)
     done()
     if (err) {
@@ -75,7 +75,7 @@ app.post("/", (req, res) => {
           console.log("La transacción no existe, se puede crear")
           if (res1.rowCount == 0) {
             if (err) throw err
-            client.query('INSERT INTO transactions(messageId, data, publishTime) VALUES ($1, $2, $3) RETURNING *', [message.messageId, decodedString, new Date(message.publishTime)], (err2, res2) => {
+            client.query('INSERT INTO transactions(message_id, data, publish_time) VALUES ($1, $2, $3) RETURNING *', [message.messageId, decodedString, new Date(message.publishTime)], (err2, res2) => {
               done()
                 if (err1) {
                   console.log(err1.stack)
