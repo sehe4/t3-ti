@@ -13,10 +13,10 @@ app.use(bodyParser.json());
 
 const port = process.env.PORT || 3001;
 const pgClient = new Pool({
-  user: process.env.USER,
-  host: process.env.HOST,
-  database: process.env.DATABASE,
-  password: process.env.PASSWORD,
+  user: process.env.PGUSER,
+  host: process.env.PGHOST,
+  database: process.env.PGDATABASE,
+  password: process.env.PGPASSWORD,
   port: process.env.PGPORT 
 });
 
@@ -26,9 +26,12 @@ pgClient.on('error', (err, client) => {
   console.error('Unexpected error on idle client', err)
   process.exit(-1)
 })
+
 pgClient.connect((err, client1, done) => {
+
   if (err) throw err
   client1.query('CREATE TABLE IF NOT EXISTS transactions (messageId VARCHAR(255), data VARCHAR(255), publishTime TIMESTAMP )', (err, res) => {
+    console.log(res)
     done()
     if (err) {
       console.log(err.stack)
@@ -36,6 +39,10 @@ pgClient.connect((err, client1, done) => {
       console.log("Tabla funcionando")
     }
   })
+
+  // client1.release();
+
+
 })
 const body = {
   "url": "https://tarea-3-ti-g920.onrender.com/"
@@ -98,6 +105,14 @@ app.post("/", (req, res) => {
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
+// Release the client back to the pool and close the connection
+  pgClient.end((err) => {
+   if (err) {
+     console.error('Error closing pool:', err);
+   } else {
+     console.log('Connection closed successfully');
+   }
+ });
 
 
 
