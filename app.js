@@ -40,8 +40,6 @@ pgClient.connect((err, client1, done) => {
     }
   })
 
-  // client1.release();
-
 
 })
 const body = {
@@ -67,9 +65,7 @@ app.post("/", (req, res) => {
     
     // Convertir el buffer a cadena
     const decodedString = buffer.toString('utf8');
-    
-    // Convertir la cadena a decimal
-    const decimalValue = Number(decodedString);
+
     // Insertar en la tabla
 
     pgClient.connect((err, client, done) => {
@@ -79,7 +75,7 @@ app.post("/", (req, res) => {
           console.log("La transacción no existe, se puede crear")
           if (res1.rowCount == 0) {
             if (err) throw err
-            client.query('INSERT INTO transactions(messageId, data, publishTime) VALUES ($1, $2, $3) RETURNING *', [message.messageId, decimalValue, new Date(message.publishTime)], (err2, res2) => {
+            client.query('INSERT INTO transactions(messageId, data, publishTime) VALUES ($1, $2, $3) RETURNING *', [message.messageId, decodedString, new Date(message.publishTime)], (err2, res2) => {
               done()
                 if (err1) {
                   console.log(err1.stack)
