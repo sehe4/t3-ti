@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const axios = require('axios');
+const { Pool } = require("pg");
 
 const app = express();
 app.use(cors());
@@ -37,12 +38,13 @@ const body = {
   "url": "https://tarea-3-ti-g920.onrender.com/"
 }
 
-axios.post('https://us-central1-taller-integracion-310700.cloudfunctions.net/tarea-3-2023-1/subscriptions/18642403', body)
-  .then(response => {
-  })
-  .catch(error => {
-
-  });
+// axios.post('https://us-central1-taller-integracion-310700.cloudfunctions.net/tarea-3-2023-1/subscriptions/18642403', body)
+//   .then(response => {
+//     console.log(response.data)
+//   })
+//   .catch(error => {
+//     console.log(error.response.data)
+//   });
 
 app.get("/", (req, res) => res.type('html').send(html));
 
