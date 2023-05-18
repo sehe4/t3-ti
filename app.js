@@ -50,7 +50,7 @@ app.get("/", (req, res) => res.type('html').send(html));
 
 app.post("/", (req, res) => {
   try {
-    console.log(req)
+    console.log("Mensaje",req.body)
     res.status(200).send({ message: 'Message recieved' });
   } catch (error) {
     console.error('Failed to recieve message:', error.response.data);
