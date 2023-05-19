@@ -6,12 +6,12 @@ const ConciliationTable = ({ conciliationData }) => {
     <Table striped bordered hover>
       <thead>
         <tr>
-          <th>Banco 1</th>
-          <th>Banco 2</th>
-          <th>Depósitos Recibidos Banco 1</th>
-          <th>Reversas Recibidas Banco 1</th>
-          <th>Depósitos Recibidos Banco 2</th>
-          <th>Reversas Recibidas Banco 2</th>
+          <th>Banco Origen</th>
+          <th>Banco Destino</th>
+          <th>Depósitos Recibidos</th>
+          <th>Depósitos Enviados</th>
+          <th>Reversas Recibidas</th>
+          <th>Reversas Enviadas</th>
           <th>Conciliación</th>
           <th>Banco Deudor</th>
         </tr>
@@ -19,12 +19,12 @@ const ConciliationTable = ({ conciliationData }) => {
       <tbody>
         {conciliationData.map((row, index) => (
           <tr key={index}>
-            <td>{row.banco1}</td>
-            <td>{row.banco2}</td>
-            <td>{row.depositosRecibidosBanco1}</td>
-            <td>{row.reversasRecibidasBanco1}</td>
-            <td>{row.depositosRecibidosBanco2}</td>
-            <td>{row.reversasRecibidasBanco2}</td>
+            <td>{row.origin_bank}</td>
+            <td>{row.destination_bank}</td>
+            <td>{row.monto_depositos_recibidos}</td>
+            <td>{row.monto_depositos_enviados}</td>
+            <td>{row.monto_reversas_recibidas}</td>
+            <td>{row.monto_reversas_enviadas}</td>
             <td>{row.conciliacion}</td>
             <td>{row.bancoDeudor}</td>
           </tr>

@@ -41,10 +41,10 @@ const App = () => {
   useEffect(() => {
     var url = "http://localhost:3001/"
     var api_url = 'banks';
-    console.log(url+api_url);
+    // console.log(url+api_url);
     axios.get(url+api_url)
     .then(response => {
-      console.log(response.data);
+      // console.log(response.data);
       setBankOptions(response.data.banks);
     })
     .catch(error => {
@@ -69,16 +69,19 @@ const App = () => {
     axios.get(api_url, { params: parametros })
     .then(response => {
       // Maneja la respuesta de la API
-      console.log(response.data);
+      // console.log(response.data);
       if (activeKey === 'link-1') {
         setTotal(response.data.Total);
         setOperationData(response.data.operationData);
-      } else if (activeKey === 'link-2') {
-        setConciliationData(response.data.conciliationData);
-      } else if (activeKey === 'link-3') {
-        setTransactions(response.data.transactions);
-      } else if (activeKey === 'link-4') {
-        setTransactions(response.data.transactions);
+      }
+      if (activeKey === 'link-2') {
+        setConciliationData(response.data);
+      }
+      if (activeKey === 'link-3') {
+        setTransactions(response.data);
+      }
+      if (activeKey === 'link-4') {
+        setTransactions(response.data);
       }
     })
     .catch(error => {

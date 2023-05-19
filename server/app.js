@@ -22,7 +22,7 @@ const pgClient = new Pool({
 
 pgClient.on('error', (err, client) => {
   console.log(err)
-  console.log(client)
+  // console.log(client)
   console.error('Unexpected error on idle client', err)
   process.exit(-1)
 })
@@ -92,13 +92,13 @@ app.get("/banks", (req, res) => {
 
 app.get("/desglose", (req, res) => {
   try {
-    console.log("Desglose")
+    // console.log("Desglose")
     const originBank = req.query.origin_bank;
     const destinationBank = req.query.destination_bank;
     const date = req.query.date;
     var query = 'SELECT type, COUNT(*) AS cantidad, SUM(amount) AS monto_total FROM transactions';
     var query1 = ' GROUP BY type';
-    console.log(req.query)
+    // console.log(req.query)
     var params = [];
     if (originBank && originBank !== null && originBank !== 'Todos') {
       query = query + ' WHERE origin_bank = $1';
@@ -123,8 +123,8 @@ app.get("/desglose", (req, res) => {
       params.push(date);
     }
     query = query + query1;
-    console.log(query);
-    console.log(params);
+    // console.log(query);
+    // console.log(params);
     pgClient.connect((err, client, done) => {
       if (err) throw err
       client.query(query, params, (err, res1) => {
@@ -136,8 +136,176 @@ app.get("/desglose", (req, res) => {
           res1.rows.forEach((row) => {
             total = total + parseInt(row.cantidad)
           });
-          console.log({Total: total, operationData: res1.rows})
+          // console.log({Total: total, operationData: res1.rows})
           res.status(200).send({Total: total, operationData: res1.rows});
+        }
+      })
+    })
+  } catch (error) {
+    console.error('Failed to recieve message:', error.response.data);
+    res.status(500).send({ error: 'Failed to recieve message' });
+  }
+});
+
+app.get("/ultimas", (req, res) => {
+  try {
+    // console.log("Ultimas")
+    const originBank = req.query.origin_bank;
+    const destinationBank = req.query.destination_bank;
+    const date = req.query.date;
+    var query = 'SELECT * FROM transactions';
+    // console.log(req.query)
+    var params = [];
+    if (originBank && originBank !== null && originBank !== 'Todos') {
+      query = query + ' WHERE origin_bank = $1';
+      params.push(originBank);
+    }
+    if (destinationBank && destinationBank !== null && destinationBank !== 'Todos') {
+      if (originBank !== null && originBank !== 'Todos') {
+        query = query + ' AND destination_bank = $2';
+      } else {
+        query = query + ' WHERE destination_bank = $1';
+      }
+      params.push(destinationBank);
+    }
+    if (date && date !== null) {
+      if (originBank !== null && originBank !== 'Todos' && destinationBank !== null && destinationBank !== 'Todos') {
+        query = query + ' AND publish_time::date = $3::date';
+      } else if ((originBank !== null && originBank !== 'Todos') || (destinationBank !== null && destinationBank !== 'Todos')) {
+        query = query + ' AND publish_time::date = $2::date';
+      } else {
+        query = query + ' WHERE publish_time::date = $1::date';
+      }
+      params.push(date);
+    }
+    query = query + ' ORDER BY publish_time DESC LIMIT 100';
+    // console.log(query);
+    // console.log(params);
+    pgClient.connect((err, client, done) => {
+      if (err) throw err
+      client.query(query, params, (err, res1) => {
+        done()
+        if (err) {
+          console.log(err.stack)
+        } else {
+          // console.log(res1.rows)
+          res.status(200).send(res1.rows);
+        }
+      })
+    })
+  } catch (error) {
+    console.error('Failed to recieve message:', error.response.data);
+    res.status(500).send({ error: 'Failed to recieve message' });
+  }
+});
+app.get("/histograma", (req, res) => {
+  try {
+    // console.log("Ultimas")
+    const originBank = req.query.origin_bank;
+    const destinationBank = req.query.destination_bank;
+    const date = req.query.date;
+    var query = 'SELECT * FROM transactions';
+    // console.log(req.query)
+    var params = [];
+    if (originBank && originBank !== null && originBank !== 'Todos') {
+      query = query + ' WHERE origin_bank = $1';
+      params.push(originBank);
+    }
+    if (destinationBank && destinationBank !== null && destinationBank !== 'Todos') {
+      if (originBank !== null && originBank !== 'Todos') {
+        query = query + ' AND destination_bank = $2';
+      } else {
+        query = query + ' WHERE destination_bank = $1';
+      }
+      params.push(destinationBank);
+    }
+    if (date && date !== null) {
+      if (originBank !== null && originBank !== 'Todos' && destinationBank !== null && destinationBank !== 'Todos') {
+        query = query + ' AND publish_time::date = $3::date';
+      } else if ((originBank !== null && originBank !== 'Todos') || (destinationBank !== null && destinationBank !== 'Todos')) {
+        query = query + ' AND publish_time::date = $2::date';
+      } else {
+        query = query + ' WHERE publish_time::date = $1::date';
+      }
+      params.push(date);
+    }
+    // console.log(query);
+    // console.log(params);
+    pgClient.connect((err, client, done) => {
+      if (err) throw err
+      client.query(query, params, (err, res1) => {
+        done()
+        if (err) {
+          console.log(err.stack)
+        } else {
+          // console.log(res1.rows)
+          res.status(200).send(res1.rows);
+        }
+      })
+    })
+  } catch (error) {
+    console.error('Failed to recieve message:', error.response.data);
+    res.status(500).send({ error: 'Failed to recieve message' });
+  }
+});
+
+app.get("/conciliacion", (req, res) => {
+  try {
+    // console.log("Conciliacion")
+    const originBank = req.query.origin_bank;
+    const destinationBank = req.query.destination_bank;
+    const date = req.query.date;
+    // var query = 'SELECT  origin_bank, destination_bank, SUM(CASE WHEN type = $1 AND origin_bank = $2 THEN amount ELSE 0 END) AS monto_depositos_recibidos, SUM(CASE WHEN type = $1 AND destination_bank = $3 THEN amount ELSE 0 END) AS monto_depositos_enviados, SUM(CASE WHEN type = $4 AND origin_bank = $2 THEN amount ELSE 0 END) AS monto_reversas_recibidas, SUM(CASE WHEN type = $4 AND destination_bank = $3 THEN amount ELSE 0 END) AS monto_reversas_enviada FROM transactions';
+    // var query = 'SELECT t1.origin_bank, t2.destination_bank, SUM(CASE WHEN t1.type = $1 THEN t1.amount ELSE 0 END) AS monto_depositos_recibidos, SUM(CASE WHEN t1.type = $2 THEN t1.amount ELSE 0 END) AS monto_reversas_recibidas, SUM(CASE WHEN t2.type = $1 THEN t2.amount ELSE 0 END) AS monto_depositos_enviados, SUM(CASE WHEN t2.type = $2 THEN t2.amount ELSE 0 END) AS monto_reversas_enviadas FROM transactions t1 JOIN transactions t2 ON t1.origin_bank = t2.destination_bank'
+    var query = 'SELECT origin_bank, destination_bank, SUM(CASE WHEN type = $1 AND origin_bank = destination_bank THEN amount ELSE 0 END) AS monto_depositos_recibidos, SUM(CASE WHEN type = $1 AND origin_bank <> destination_bank THEN amount ELSE 0 END) AS monto_depositos_enviados, SUM(CASE WHEN type = $2 AND origin_bank = destination_bank THEN amount ELSE 0 END) AS monto_reversas_recibidas, SUM(CASE WHEN type = $2 AND origin_bank <> destination_bank THEN amount ELSE 0 END) AS monto_reversas_enviadas FROM transactions'
+    // console.log(req.query)
+    var params = [2200, 2400];
+    if (originBank && originBank !== null && originBank !== 'Todos') {
+      query = query + ' WHERE origin_bank = $3';
+      params.push(originBank);
+    }
+    if (destinationBank && destinationBank !== null && destinationBank !== 'Todos') {
+      if (originBank !== null && originBank !== 'Todos') {
+        query = query + ' AND destination_bank = $5';
+      } else {
+        query = query + ' WHERE destination_bank = $3';
+      }
+      params.push(destinationBank);
+    }
+    if (date && date !== null) {
+      if (originBank !== null && originBank !== 'Todos' && destinationBank !== null && destinationBank !== 'Todos') {
+        query = query + ' AND publish_time::date = $5::date';
+      } else if ((originBank !== null && originBank !== 'Todos') || (destinationBank !== null && destinationBank !== 'Todos')) {
+        query = query + ' AND publish_time::date = $4::date';
+      } else {
+        query = query + ' WHERE publish_time::date = $3::date';
+      }
+      params.push(date);
+    }
+    query = query + ' GROUP BY origin_bank, destination_bank ORDER BY origin_bank ASC';
+    // console.log(query);
+    // console.log(params);
+    pgClient.connect((err, client, done) => {
+      if (err) throw err
+      client.query(query, params, (err, res1) => {
+        done()
+        if (err) {
+          console.log(err.stack)
+        } else {
+          // console.log(res1.rows)
+          var conciliacion = 0;
+          res1.rows.forEach((row) => {
+            conciliacion = row.monto_depositos_recibidos - row.monto_depositos_enviados - row.monto_reversas_recibidas + row.monto_reversas_enviadas;
+            row.conciliacion = conciliacion;
+            if (conciliacion > 0) {
+              row.bancoDeudor = row.origin_bank;
+            } else if (conciliacion < 0) {
+              row.bancoDeudor = row.destination_bank;
+            } else {
+              row.bancoDeudor = 'Ninguno';
+            }
+          });
+          res.status(200).send(res1.rows);
         }
       })
     })
@@ -149,7 +317,7 @@ app.get("/desglose", (req, res) => {
 
 app.post("/", (req, res) => {
   try {
-    console.log("Mensaje",req.body);
+    // console.log("Mensaje",req.body);
     const message = req.body.message;
     // Decodificar la cadena base64 a buffer
     const buffer = Buffer.from(message.data, 'base64');
