@@ -61,6 +61,91 @@ const body = {
 //   });
 
 app.get("/", (req, res) => res.type('html').send(html));
+app.get("/banks", (req, res) => {
+  var query = 'SELECT DISTINCT origin_bank AS bank FROM transactions UNION SELECT DISTINCT destination_bank AS bank FROM transactions';
+  try {
+    pgClient.connect((err, client, done) => {
+      if (err) throw err
+      client.query(query, (err, res1) => {
+        done()
+        if (err) {
+          console.log(err.stack)
+        } else {
+          var banks = ['Todos'];
+          res1.rows.forEach((row) => {
+            banks.push(row.bank);
+          });
+          res.status(200).send({ banks: banks });
+        }
+      })
+    })
+  } catch (error) {
+    console.error('Failed to recieve message:', error.response.data);
+    res.status(500).send({ error: 'Failed to recieve message' });
+  }
+});
+
+
+
+
+
+
+app.get("/desglose", (req, res) => {
+  try {
+    console.log("Desglose")
+    const originBank = req.query.origin_bank;
+    const destinationBank = req.query.destination_bank;
+    const date = req.query.date;
+    var query = 'SELECT type, COUNT(*) AS cantidad, SUM(amount) AS monto_total FROM transactions';
+    var query1 = ' GROUP BY type';
+    console.log(req.query)
+    var params = [];
+    if (originBank && originBank !== null && originBank !== 'Todos') {
+      query = query + ' WHERE origin_bank = $1';
+      params.push(originBank);
+    }
+    if (destinationBank && destinationBank !== null && destinationBank !== 'Todos') {
+      if (originBank !== null && originBank !== 'Todos') {
+        query = query + ' AND destination_bank = $2';
+      } else {
+        query = query + ' WHERE destination_bank = $1';
+      }
+      params.push(destinationBank);
+    }
+    if (date && date !== null) {
+      if (originBank !== null && originBank !== 'Todos' && destinationBank !== null && destinationBank !== 'Todos') {
+        query = query + ' AND publish_time::date = $3::date';
+      } else if ((originBank !== null && originBank !== 'Todos') || (destinationBank !== null && destinationBank !== 'Todos')) {
+        query = query + ' AND publish_time::date = $2::date';
+      } else {
+        query = query + ' WHERE publish_time::date = $1::date';
+      }
+      params.push(date);
+    }
+    query = query + query1;
+    console.log(query);
+    console.log(params);
+    pgClient.connect((err, client, done) => {
+      if (err) throw err
+      client.query(query, params, (err, res1) => {
+        done()
+        if (err) {
+          console.log(err.stack)
+        } else {
+          var total = 0;
+          res1.rows.forEach((row) => {
+            total = total + parseInt(row.cantidad)
+          });
+          console.log({Total: total, operationData: res1.rows})
+          res.status(200).send({Total: total, operationData: res1.rows});
+        }
+      })
+    })
+  } catch (error) {
+    console.error('Failed to recieve message:', error.response.data);
+    res.status(500).send({ error: 'Failed to recieve message' });
+  }
+});
 
 app.post("/", (req, res) => {
   try {
@@ -79,6 +164,7 @@ app.post("/", (req, res) => {
     const destinationBank = decodedString.substring(31, 38);
     const destinationAccount = decodedString.substring(38, 48);
     const amount = decodedString.substring(48);
+    const pattern = /^(\d{4})(\d{10})(\d{7})(\d{10})(\d{7})(\d{10})(\d{16})$/;
     // Insertar en la tabla
 
     pgClient.connect((err, client, done) => {
@@ -90,15 +176,20 @@ app.post("/", (req, res) => {
             if (err) throw err
             client.query('INSERT INTO messages(message_id, data, publish_time) VALUES ($1, $2, $3) RETURNING *', [message.messageId, decodedString, new Date(message.publishTime)], (err2, res2) => {
               })
-              client.query('INSERT INTO transactions(type, message_id, origin_bank, origin_account, destination_bank, destination_account, amount, publish_time) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *', [type, messageId, originBank, originAccount, destinationBank, destinationAccount, amount, new Date(message.publishTime)], (err2, res2) => {
-                done()
-                  if (err1) {
-                    console.log(err1.stack)
-                  } else {
-                    console.log("Transacción creada")
-                    return;
-                  }
-                })
+              if (pattern.test(decodedString)) {
+                const [, operationType] = decodedString.match(pattern);
+                if (operationType === '2200' || operationType === '2400') {
+                  console.log('El string tiene el formato correcto y el tipo de operación es válido.');
+                  client.query('INSERT INTO transactions(type, message_id, origin_bank, origin_account, destination_bank, destination_account, amount, publish_time) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *', [type, messageId, originBank, originAccount, destinationBank, destinationAccount, amount, new Date(message.publishTime)], (err2, res2) => {
+                  done()
+                    if (err1) {
+                      console.log(err1.stack)
+                    } else {
+                      console.log("Transacción creada")
+                      return;
+                    }
+                  })
+              }}
           } else {
             console.log("La transacción ya existe")
             return;
