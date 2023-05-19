@@ -39,7 +39,8 @@ const App = () => {
 
 
   useEffect(() => {
-    var url = "http://localhost:3001/"
+    var url2 = "http://localhost:3001/"
+    var url = "https://tarea-3-ti-g920.onrender.com/";
     var api_url = 'banks';
     // console.log(url+api_url);
     axios.get(url+api_url)
@@ -54,7 +55,8 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    var url = "http://localhost:3001/"
+    var url2 = "http://localhost:3001/"
+    var url = "https://tarea-3-ti-g920.onrender.com/";
     var api_url = '';
     if (activeKey === 'link-1') {
       api_url = url + 'desglose';
