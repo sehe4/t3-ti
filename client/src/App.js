@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Container, Row, Col, Nav } from 'react-bootstrap';
+import { Container, Row, Col, Nav, hr } from 'react-bootstrap';
 import { Dropdown, DropdownButton, Form } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -45,7 +45,7 @@ const App = () => {
     // console.log(url+api_url);
     axios.get(url+api_url)
     .then(response => {
-      // console.log(response.data);
+      console.log(response.data);
       setBankOptions(response.data.banks);
     })
     .catch(error => {
@@ -96,25 +96,28 @@ const App = () => {
 
   return (
     
-    <Container fluid>
-      <Row>
-      <Col md={3}>
-      <Nav variant="pills" activeKey={activeKey} className="flex-column" onSelect={handleNavSelect}>
+    <Container fluid >
+      <Row className='vh-100'>
+      <Col md={3} className="bg-dark px-2">
+      <h2 className="card-title text-white px-1 pt-2">Dashboard</h2>
+      <hr className="text-white"/>
+      <Nav variant="pills" activeKey={activeKey} className="flex-column py-1" onSelect={handleNavSelect}>
         <Nav.Item>
-          <Nav.Link eventKey="link-1">Operaciones y desglose</Nav.Link>
+          <Nav.Link eventKey="link-1" className='text-white'>Operaciones y desglose</Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link eventKey="link-2">Conciliación entre bancos</Nav.Link>
+          <Nav.Link eventKey="link-2" className='text-white'>Conciliación entre bancos</Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link eventKey="link-3">Últimas 100 transacciones</Nav.Link>
+          <Nav.Link eventKey="link-3" className='text-white'>Últimas 100 transacciones</Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link eventKey="link-4">Histograma del monto de transacciones</Nav.Link>
+          <Nav.Link eventKey="link-4" className='text-white'>Histograma del monto de transacciones</Nav.Link>
         </Nav.Item>
       </Nav>
-
-      <Form.Group>
+      <h5 className="card-title text-white px-1 pt-4 pb-2">Filtros</h5>
+      <p className="card-title text-white px-1 pt-3 pb-1">Banco de Origen</p>
+      <Form.Group className="py-2 px-2">
       <DropdownButton id="bank-filter-dropdown" title={selectedOriginBank ? selectedOriginBank : 'Seleccionar Banco de Origen'}>
         {bankOptions.map((bank, index) => (
           <Dropdown.Item key={index} onClick={() => handleOriginBankChange(bank)}>
@@ -123,8 +126,8 @@ const App = () => {
         ))}
       </DropdownButton>
     </Form.Group>
-    
-    <Form.Group>
+    <p className="card-title text-white px-1 pt-2 pb-1">Banco de Destino</p>
+    <Form.Group className="py-2 px-2">
       <DropdownButton id="bank-filter-dropdown" title={selectedDestinationBank ? selectedDestinationBank : 'Seleccionar Banco de Destino'}>
         {bankOptions.map((bank, index) => (
           <Dropdown.Item key={index} onClick={() => handleDestinationBankChange(bank)}>
@@ -132,8 +135,9 @@ const App = () => {
           </Dropdown.Item>
         ))}
       </DropdownButton>
+      <p className="card-title text-white px-1 pt-2 pb-1">Fecha</p>
     </Form.Group>
-    <DatePicker selected={selectedDate} onChange={handleDateChange} dateFormat="dd/MM/yyyy" />
+    <DatePicker selected={selectedDate} onChange={handleDateChange} dateFormat="dd/MM/yyyy" className=" mx-2"/>
 
     </Col>
         <Col md={9}>

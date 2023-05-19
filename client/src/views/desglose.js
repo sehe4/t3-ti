@@ -4,7 +4,7 @@ import { Table } from 'react-bootstrap';
 const OperationTable = ({ Total, operationData }) => {
   return (
     <>
-    <p>Cantidad de Operaciones Totales: {Total}</p>
+    <h3 className='px-2 py-4'>Cantidad de Operaciones Totales: {Total}</h3>
 
     <Table striped bordered hover>
       <thead>

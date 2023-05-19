@@ -3,7 +3,7 @@ import { Table } from 'react-bootstrap';
 
 const TransactionTable = ({ transactions }) => {
   return (
-    <Table striped bordered hover>
+    <Table striped bordered hover className='mx-2 my-4 fs-6 fw-light'>
       <thead>
         <tr>
           <th>Tipo</th>

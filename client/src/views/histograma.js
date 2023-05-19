@@ -57,7 +57,7 @@ const TransactionHistogram = ({ transactions }) => {
         },
       };
   
-    return <Bar data={data} options={options} />;
+    return <Bar data={data} options={options} className='px-4 py-4'/>;
   };
 
   export default TransactionHistogram;
